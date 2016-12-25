@@ -2,17 +2,15 @@ package com.fedaros.speedreadingtrainer.SchualtzTable;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.GridView;
-import android.widget.ImageView;
+import android.view.ViewGroup;
+import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,12 +26,14 @@ import java.util.TimerTask;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class SchultzTableActivity extends AppCompatActivity {
+public class SchultzTableActivity extends AppCompatActivity implements View.OnClickListener{
 
     @InjectView(R.id.random_numbers_grid)
-    GridView numbersGridView;
+    GridLayout numbersGridLyout;
+
     @InjectView(R.id.current_number_txt)
     TextView currentNumberTxt;
+
     @InjectView(R.id.time_tracker_txt)
     TextView timeTrackerTxt;
 
@@ -41,15 +41,11 @@ public class SchultzTableActivity extends AppCompatActivity {
     private ArrayList<Integer> numbersArrayList;
     //array to keep track of the numbers order.
     private ArrayList<Integer> trackingArrayList;
-
-    private NumberAdapter numberAdapter;
     private Context mContext;
 
     private Timer timer;
     private LoggingHelper loggingHelper = new LoggingHelper(true);
 
-    private int chosenGridSize = 9;
-    private int gridColumnSize = 3;
 
     private String LOG_TAG = SchultzTableActivity.class.getSimpleName();
 
@@ -60,56 +56,57 @@ public class SchultzTableActivity extends AppCompatActivity {
 
         ButterKnife.inject(this);
         mContext = this;
-
         numbersArrayList = new ArrayList<>();
         trackingArrayList = new ArrayList<>();
-        trackingArrayList = removeAllElements(trackingArrayList);
 
         currentNumberTxt.setText("0");
 
-        //fill the array with numbers.
-        numbersArrayList = fillArrayWithNumbers(numbersArrayList, chosenGridSize);
-        //shuffle the numbers inside the array.
-        shuffleNumbers();
+        buildGrid(4);
 
-        Log.d(LOG_TAG, "ArrayList Size" + numbersArrayList.size());
-
-        numberAdapter = new NumberAdapter(this,
-                R.layout.number_view_layout, numbersArrayList);
-
-        numbersGridView.setAdapter(numberAdapter);
-
-        numbersGridView.setNumColumns(gridColumnSize);
-
-        Log.d(LOG_TAG, "AdapterCount" + numbersGridView.getAdapter().getCount());
-
-        numbersGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView textView = (TextView) view.findViewById(R.id.number_txt);
-
-                final boolean isInserted = checkNumberOrder(Integer.parseInt(textView.getText().toString().trim()));
-
-                final ImageView imageView = (ImageView) view.findViewById(R.id.number_holder_img);
-                if (isInserted) {
-                    currentNumberTxt.setText(String.valueOf(
-                            trackingArrayList.get(trackingArrayList.size() - 1)));
-                }
-
-                if (trackingArrayList.size() == numbersArrayList.size()) {
-                    showEndDialog();
-                    timer.cancel();
-                    timer.purge();
-                }
-            }
-        });
         startTimer();
-
     }
 
-    //shuffle the numbers array
-    private void shuffleNumbers() {
-        Collections.shuffle(numbersArrayList);
+    private void buildGrid(int size){
+        numbersArrayList = fillArrayWithNumbers(numbersArrayList, size * size);
+        numbersGridLyout.setRowCount(size);
+        numbersGridLyout.setColumnCount(size);
+
+        int gridPadding = 1;
+
+        numbersGridLyout.setPadding(dpToPixels(gridPadding), dpToPixels(gridPadding), dpToPixels(gridPadding), dpToPixels(gridPadding));
+
+        int gridLayoutPadding = numbersGridLyout.getPaddingLeft();
+        int lengthOfSides = (getResources().getDisplayMetrics().
+                widthPixels - (gridLayoutPadding )) / (size + 1);
+
+        float textSize = 20 * (float) lengthOfSides / dpToPixels(50);
+
+        ViewGroup.MarginLayoutParams layoutParams = new ViewGroup.MarginLayoutParams(
+                lengthOfSides, lengthOfSides);
+
+        int currentIndex = 0;
+        for (int i = 0; i < size; i++){
+            for (int j = 0; j < size; j++){
+                TextView textView = new TextView(this);
+                textView.setText(String.valueOf(numbersArrayList.get(currentIndex)));
+                textView.setBackgroundResource(R.drawable.textview_border);
+                textView.setGravity(Gravity.CENTER);
+                textView.setLayoutParams(layoutParams);
+                textView.setTextSize(textSize);
+
+
+                currentIndex++;
+
+                textView.setOnClickListener(this);
+
+                numbersGridLyout.addView(textView);
+            }
+        }
+    }
+
+    private int dpToPixels(int dp) {
+        float scale = getResources().getDisplayMetrics().density;
+        return (int) (dp * scale + 0.5f);
     }
 
     /**
@@ -125,16 +122,9 @@ public class SchultzTableActivity extends AppCompatActivity {
                 arrayList.add(i);
             }
         } else {
-            arrayList = new ArrayList<Integer>();
+            arrayList = new ArrayList<>();
         }
-
-        return arrayList;
-    }
-
-    private ArrayList removeAllElements(ArrayList arrayList) {
-        for (int i = 0; i < arrayList.size(); i++) {
-            arrayList.remove(i);
-        }
+        Collections.shuffle(arrayList);
         return arrayList;
     }
 
@@ -145,6 +135,7 @@ public class SchultzTableActivity extends AppCompatActivity {
         if (((number - elementSize) == 1) && !trackingArrayList.contains(number)) {
             trackingArrayList.add(number);
             showArrayContent(trackingArrayList);
+            currentNumberTxt.setText(String.valueOf(number));
             return true;
         } else {
             Toast.makeText(mContext, "wrong choice", Toast.LENGTH_SHORT).show();
@@ -167,7 +158,7 @@ public class SchultzTableActivity extends AppCompatActivity {
         builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                restartGame(chosenGridSize);
+                restartGame(5);
             }
         });
 
@@ -183,14 +174,14 @@ public class SchultzTableActivity extends AppCompatActivity {
     }
 
     private void restartGame(int gridSize) {
-        numberAdapter.clear();
-        numbersArrayList = fillArrayWithNumbers(numbersArrayList, gridSize);
-        shuffleNumbers();
+        numbersGridLyout.removeAllViews();
         trackingArrayList = new ArrayList<>();
+        numbersArrayList = new ArrayList<>();
+        buildGrid(gridSize);
+
 
         currentNumberTxt.setText("0");
         timeTrackerTxt.setText(R.string.timer_text_format);
-        numberAdapter.notifyDataSetChanged();
 
         if (timer != null) {
             timer.cancel();
@@ -236,7 +227,7 @@ public class SchultzTableActivity extends AppCompatActivity {
 
         switch (item.getItemId()){
             case R.id.action_settings:
-                startActivity(new Intent(mContext, SchultzTabkeSettingsActivity.class));
+
                 return true;
             case R.id.action_grid:
                 showGridDialog();
@@ -260,32 +251,18 @@ public class SchultzTableActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialogInterface, int checkedId) {
                 switch (checkedId){
                     case 0:
-                        chosenGridSize = 9;
-                        restartGame(chosenGridSize);
-                        gridColumnSize = 3;
-                        numbersGridView.setColumnWidth(3);
-                        refreshActivity();
+
                         break;
                     case 1:
-                        chosenGridSize = 16;
-                        restartGame(chosenGridSize);
-                        gridColumnSize = 4;
-                        numbersGridView.setColumnWidth(4);
-                        refreshActivity();
+
                         break;
                     case 2:
-                        chosenGridSize = 25;
-                        restartGame(chosenGridSize);
-                        gridColumnSize = 5;
-                        numbersGridView.setColumnWidth(5);
-                        refreshActivity();
+
+
+
                         break;
                     default:
-                        chosenGridSize = 9;
-                        restartGame(chosenGridSize);
-                        gridColumnSize = 3;
-                        numbersGridView.setColumnWidth(3);
-                        refreshActivity();
+
 
                 }
                 gridDialog.dismiss();
@@ -300,7 +277,25 @@ public class SchultzTableActivity extends AppCompatActivity {
 
     }
 
-    private void refreshActivity(){
-//        recreate();
+    boolean isCorrect = false;
+
+    @Override
+    public void onClick(final View view) {
+        if (view instanceof TextView){
+            Blink x = new Blink(view);
+            isCorrect = checkNumberOrder(Integer.parseInt(((TextView) view).getText().toString()));
+
+            if (trackingArrayList.size() == numbersArrayList.size()){
+                showEndDialog();
+            }
+
+            if (isCorrect){
+                x.startBlinking(true);
+            }else {
+                x.startBlinking(false);
+            }
+
+        }
     }
+
 }
