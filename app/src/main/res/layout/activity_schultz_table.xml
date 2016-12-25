@@ -32,24 +32,7 @@
         app:layout_constraintTop_toTopOf="@+id/textView"
         app:layout_constraintBottom_toBottomOf="@+id/textView" />
 
-    <GridView
-        android:id="@+id/random_numbers_grid"
-        android:layout_height="0dp"
-        android:gravity="center"
-        android:stretchMode="columnWidth"
-        tools:layout_constraintRight_creator="1"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        tools:layout_constraintLeft_creator="1"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
-        android:numColumns="2"
-        app:layout_constraintTop_toTopOf="@+id/guideline"
-        android:layout_width="0dp" />
+
 
     <TextView
         android:text="Current"
@@ -83,4 +66,28 @@
         app:layout_constraintGuide_percent="0.078277886"
         tools:layout_editor_absoluteY="40dp"
         tools:layout_editor_absoluteX="0dp" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintTop_toTopOf="@+id/guideline"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="16dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center">
+
+        <GridLayout
+            android:id="@+id/random_numbers_grid"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:background="@drawable/textview_border"
+            />
+    </LinearLayout>
 </android.support.constraint.ConstraintLayout>
