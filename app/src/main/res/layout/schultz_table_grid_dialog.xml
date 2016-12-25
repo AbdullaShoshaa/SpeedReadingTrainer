@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    <RadioGroup
+        android:id="@+id/grid_size_rg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:id="@+id/three_by_three_rb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="3 x 3"/>
+        <RadioButton
+            android:id="@+id/four_by_four_rb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="4 x 4"/>
+        <RadioButton
+            android:id="@+id/five_by_five_rb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="5 x 5"/>
+    </RadioGroup>
+</RelativeLayout>
